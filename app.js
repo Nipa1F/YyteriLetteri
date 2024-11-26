@@ -1,6 +1,12 @@
-// Set home location as target
-let targetLocation = { latitude: 60.425749, longitude: 22.238295 }; // Your home coordinates
+// Define target locations and clues
+let targets = [
+    { latitude: 60.425749, longitude: 22.238295, clue: "Welcome home! Your next clue is near the park." },
+    { latitude: 60.426500, longitude: 22.240000, clue: "You've reached the park! Look for the tallest tree for your next clue." },
+    { latitude: 60.427000, longitude: 22.242500, clue: "You've reached the final spot! Enjoy the treasure!" }
+];
+
 let targetRadius = 50; // in meters
+let currentTargetIndex = 0;
 
 // Function to calculate distance
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -23,10 +29,19 @@ if (navigator.geolocation) {
     navigator.geolocation.watchPosition(function(position) {
         const userLat = position.coords.latitude;
         const userLon = position.coords.longitude;
-        const distance = calculateDistance(userLat, userLon, targetLocation.latitude, targetLocation.longitude);
+
+        const currentTarget = targets[currentTargetIndex];
+        const distance = calculateDistance(userLat, userLon, currentTarget.latitude, currentTarget.longitude);
 
         if (distance < targetRadius) {
-            document.getElementById("message").textContent = "You've reached the target! Here's your new clue!";
+            document.getElementById("message").textContent = currentTarget.clue;
+
+            // Move to the next target if available
+            if (currentTargetIndex < targets.length - 1) {
+                currentTargetIndex++;
+            } else {
+                document.getElementById("message").textContent += " You've completed the journey!";
+            }
         } else {
             document.getElementById("message").textContent = `You're ${Math.round(distance)} meters away from the target.`;
         }
