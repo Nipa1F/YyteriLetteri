@@ -3,12 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geocaching Tracker</title>
+    <title>GPS Tracker</title>
+    <style>
+        /* General Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+        }
+
+        /* Background Styling */
+        body {
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Center Panel */
+        .tracker-container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .tracker-container h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .tracker-container p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .tracker-container button {
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .tracker-container button:hover {
+            background-color: #e6006d;
+        }
+
+        /* Message Panel */
+        .message {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+    </style>
 </head>
 <body>
-    <h1>Geocaching Tracker</h1>
-    <p id="message">Waiting for location...</p>
+    <div class="tracker-container">
+        <h1>Welcome to the GPS Tracker!</h1>
+        <p>Find your way to the target location and get your clue!</p>
 
-    <script src="app.js"></script>
+        <div class="message" id="message">Loading location...</div>
+
+        <button id="retry">Retry Location Access</button>
+    </div>
+
+    <script>
+        // Define target location and radius
+        let targetLocation = { latitude: 60.425749, longitude: 22.238295 }; // Example coordinates
+        let targetRadius = 50; // in meters
+
+        const messageElement = document.getElementById("message");
+        const retryButton = document.getElementById("retry");
+
+        // Function to calculate distance
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distance in meters
+        }
+
+        // Start geolocation
+        function startGeolocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    function (position) {
+                        const userLat = position.coords.latitude;
+                        const userLon = position.coords.longitude;
+
+                        const distance = calculateDistance(userLat, userLon, targetLocation.latitude, targetLocation.longitude);
+
+                        if (distance < targetRadius) {
+                            messageElement.textContent = "You've reached the target! Here's your new clue!";
+                        } else {
+                            messageElement.textContent = `You're ${Math.round(distance)} meters away from the target.`;
+                        }
+                    },
+                    function (error) {
+                        if (error.code === error.PERMISSION_DENIED) {
+                            showPermissionWarning();
+                        }
+                    }
+                );
+            } else {
+                messageElement.textContent = "Geolocation is not supported by this browser.";
+            }
+        }
+
+        // Show permission warning and retry button
+        function showPermissionWarning() {
+            messageElement.textContent = "Location permission is required to use this feature.";
+        }
+
+        // Retry button click event
+        retryButton.addEventListener("click", startGeolocation);
+
+        // Initialize the app
+        startGeolocation();
+    </script>
 </body>
 </html>

@@ -1,12 +1,6 @@
-// Define target locations and clues
-let targets = [
-    { latitude: 60.428980622864536, longitude: 22.237916006190094, clue: "Welcome home! Your next clue is near the park." },
-    { latitude: 60.428828407081156, longitude: 22.237315551404162, clue: "You've reached the park! Look for the tallest tree for your next clue." },
-    { latitude: 60.42868242804275, longitude: 22.236676271616936, clue: "You've reached the final spot! Enjoy the treasure!" }
-];
-
-let targetRadius = 15; // in meters
-let currentTargetIndex = 0;
+// Define target location and radius
+let targetLocation = { latitude: 60.425749, longitude: 22.238295 }; // Example coordinates
+let targetRadius = 50; // in meters
 
 // Function to calculate distance
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -24,28 +18,60 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in meters
 }
 
-// Watch the user's position
-if (navigator.geolocation) {
-    navigator.geolocation.watchPosition(function(position) {
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
+// Function to initialize geolocation tracking
+function startGeolocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(
+            function (position) {
+                const userLat = position.coords.latitude;
+                const userLon = position.coords.longitude;
 
-        const currentTarget = targets[currentTargetIndex];
-        const distance = calculateDistance(userLat, userLon, currentTarget.latitude, currentTarget.longitude);
+                const distance = calculateDistance(userLat, userLon, targetLocation.latitude, targetLocation.longitude);
 
-        if (distance < targetRadius) {
-            document.getElementById("message").textContent = currentTarget.clue;
-
-            // Move to the next target if available
-            if (currentTargetIndex < targets.length - 1) {
-                currentTargetIndex++;
-            } else {
-                document.getElementById("message").textContent += " You've completed the journey!";
+                if (distance < targetRadius) {
+                    document.getElementById("message").textContent = "You've reached the target! Here's your new clue!";
+                } else {
+                    document.getElementById("message").textContent = `You're ${Math.round(distance)} meters away from the target.`;
+                }
+            },
+            function (error) {
+                if (error.code === error.PERMISSION_DENIED) {
+                    showPermissionWarning();
+                }
             }
-        } else {
-            document.getElementById("message").textContent = `You're ${Math.round(distance)} meters away from the target.`;
-        }
-    });
-} else {
-    document.getElementById("message").textContent = "Geolocation is not supported by this browser.";
+        );
+    } else {
+        document.getElementById("message").textContent = "Geolocation is not supported by this browser.";
+    }
 }
+
+// Function to display permission warning and retry
+function showPermissionWarning() {
+    const messageElement = document.getElementById("message");
+    messageElement.textContent = "Location permission is required to use this feature.";
+
+    const retryButton = document.createElement("button");
+    retryButton.textContent = "Retry Location Access";
+    retryButton.onclick = requestLocationPermission;
+
+    messageElement.appendChild(document.createElement("br"));
+    messageElement.appendChild(retryButton);
+}
+
+// Function to explicitly ask for location permission
+async function requestLocationPermission() {
+    try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+
+        if (permission.state === 'denied') {
+            alert("Please enable location permissions in your browser settings.");
+        } else {
+            startGeolocation();
+        }
+    } catch (error) {
+        console.error("Permissions API error:", error);
+    }
+}
+
+// Initialize the app
+startGeolocation();
