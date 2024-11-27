@@ -1,11 +1,11 @@
 // Define target locations and clues
 let targets = [
-    { latitude: 60.425749, longitude: 22.238295, clue: "Welcome home! Your next clue is near the park." },
-    { latitude: 60.426500, longitude: 22.240000, clue: "You've reached the park! Look for the tallest tree for your next clue." },
-    { latitude: 60.427000, longitude: 22.242500, clue: "You've reached the final spot! Enjoy the treasure!" }
+    { latitude: 60.428980622864536, longitude: 22.237916006190094, clue: "Welcome home! Your next clue is near the park." },
+    { latitude: 60.428828407081156, longitude: 22.237315551404162, clue: "You've reached the park! Look for the tallest tree for your next clue." },
+    { latitude: 60.42868242804275, longitude: 22.236676271616936, clue: "You've reached the final spot! Enjoy the treasure!" }
 ];
 
-let targetRadius = 50; // in meters
+let targetRadius = 15; // in meters
 let currentTargetIndex = 0;
 
 // Function to calculate distance
