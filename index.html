@@ -31,6 +31,10 @@
             text-align: center;
             width: 90%;
             max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .tracker-container h1 {
@@ -43,100 +47,99 @@
             margin-bottom: 20px;
         }
 
-        .tracker-container button {
-            background-color: #ff4081;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .tracker-container button:hover {
-            background-color: #e6006d;
-        }
-
         /* Message Panel */
         .message {
             font-size: 1.2rem;
             margin-top: 10px;
             line-height: 1.5;
         }
+
+        /* Button Styling */
+        button {
+            background-color: #6a0dad;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #8a2be2;
+        }
+
+        /* EULA Panel */
+        .eula-container {
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: left;
+            width: 90%;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+        }
+
+        .eula-container p {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        /* Custom Scrollbar */
+        .eula-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .eula-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .eula-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+        }
+
+        .eula-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Accept/Decline Buttons */
+        .eula-buttons {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="tracker-container">
+    <div class="tracker-container" id="tracker-container">
         <h1>Welcome to the GPS Tracker!</h1>
         <p>Find your way to the target location and get your clue!</p>
 
-        <div class="message" id="message">Loading location...</div>
-
-        <button id="retry">Retry Location Access</button>
+        <div class="message" id="message"></div>
+        <button id="read-eula" style="display: block;">Read EULA</button>
+        <div class="eula-buttons" id="eula-buttons">
+            <p>Do you accept the EULA?</p>
+            <button id="accept-eula">Yes</button>
+            <button id="decline-eula">No</button>
+        </div>
     </div>
 
-    <script>
-        // Define target location and radius
-        let targetLocation = { latitude: 60.425749, longitude: 22.238295 }; // Example coordinates
-        let targetRadius = 50; // in meters
+    <div class="eula-container" id="eula-container">
+        <h2>End User License Agreement (EULA)</h2>
+        <div id="eula-content"></div>
+    </div>
 
-        const messageElement = document.getElementById("message");
-        const retryButton = document.getElementById("retry");
-
-        // Function to calculate distance
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Earth radius in meters
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δφ = (lat2 - lat1) * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return R * c; // Distance in meters
-        }
-
-        // Start geolocation
-        function startGeolocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition(
-                    function (position) {
-                        const userLat = position.coords.latitude;
-                        const userLon = position.coords.longitude;
-
-                        const distance = calculateDistance(userLat, userLon, targetLocation.latitude, targetLocation.longitude);
-
-                        if (distance < targetRadius) {
-                            messageElement.textContent = "You've reached the target! Here's your new clue!";
-                        } else {
-                            messageElement.textContent = `You're ${Math.round(distance)} meters away from the target.`;
-                        }
-                    },
-                    function (error) {
-                        if (error.code === error.PERMISSION_DENIED) {
-                            showPermissionWarning();
-                        }
-                    }
-                );
-            } else {
-                messageElement.textContent = "Geolocation is not supported by this browser.";
-            }
-        }
-
-        // Show permission warning and retry button
-        function showPermissionWarning() {
-            messageElement.textContent = "Location permission is required to use this feature.";
-        }
-
-        // Retry button click event
-        retryButton.addEventListener("click", startGeolocation);
-
-        // Initialize the app
-        startGeolocation();
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
